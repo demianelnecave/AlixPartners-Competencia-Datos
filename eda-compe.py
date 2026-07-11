@@ -2,7 +2,7 @@
 import pandas as pd 
 import numpy as np
 #%%
-path = "Datos-limpiados/"
+path = "Datos-finales/"
 catalogo_productos = pd.read_csv(f"{path}catalogo_productos.csv")
 especificaciones_cajas = pd.read_csv(f"{path}especificaciones_cajas.csv")
 operaciones_planta = pd.read_csv(f"{path}operaciones_planta.csv")
