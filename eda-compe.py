@@ -1,11 +1,12 @@
+#%%
 import pandas as pd 
 import numpy as np
 #%%
-
-catalogo_productos = pd.read_csv("catalogo_productos.csv")
-especificaciones_cajas = pd.read_csv("especificaciones_cajas.csv")
-operaciones_planta = pd.read_csv("operaciones_planta.csv")
-procurement_cajas = pd.read_csv("procurement_cajas.csv")
+path = "Datos-limpiados/"
+catalogo_productos = pd.read_csv(f"{path}catalogo_productos.csv")
+especificaciones_cajas = pd.read_csv(f"{path}especificaciones_cajas.csv")
+operaciones_planta = pd.read_csv(f"{path}operaciones_planta.csv")
+procurement_cajas = pd.read_csv(f"{path}procurement_cajas.csv")
 
 #%%
 ids = catalogo_productos['codigo_producto']
