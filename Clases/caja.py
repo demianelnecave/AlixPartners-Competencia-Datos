@@ -1,7 +1,10 @@
+from Clases.producto import Producto
+
 class Caja:
-    _todas_las_cajas = {}
-    
-    def __init__(self, caja_id, dim_interior_ancho, dim_interior_largo, dim_interior_alto, grosor_mm):
+    def __init__(self, caja_id, dim_interior_ancho, dim_interior_largo, dim_interior_alto, grosor_mm, 
+                 volumen_buenos_aires, volumen_curitiba, volumen_santiago, volumen_monterrey, volumen_bakersfield,
+                 costo_unitario):
+        
         self.caja_id = caja_id
         self.dim_interior_ancho = dim_interior_ancho
         self.dim_interior_largo = dim_interior_largo
@@ -12,8 +15,16 @@ class Caja:
         self.dim_exterior_largo = dim_interior_largo + 2 * grosor_mm
         self.dim_exterior_alto = dim_interior_alto + 2 * grosor_mm
         
-        Caja._todas_las_cajas[caja_id] = self
-    
+        self.volumen_buenos_aires = volumen_buenos_aires
+        self.volumen_curitiba = volumen_curitiba
+        self.volumen_santiago = volumen_santiago
+        self.volumen_monterrey = volumen_monterrey
+        self.volumen_bakersfield = volumen_bakersfield
+        
+        self.costo_unitario = costo_unitario
+        
+        self.productos_asignados = []
+            
     def cambiar_grosor(self, grosor_mm):
         self.grosor_mm = grosor_mm
         self.dim_exterior_ancho = self.dim_interior_ancho + 2 * grosor_mm
@@ -34,6 +45,41 @@ class Caja:
                           4.6: 1450, 4.7: 1500, 4.8: 1550, 5.0: 1650}
         ect = ect_por_grosor[self.grosor_mm]
         return ect / self.perimetro() / 9.81
+
+    def volumen_total(self):
+        return (self.volumen_buenos_aires + self.volumen_curitiba + self.volumen_santiago +
+                self.volumen_monterrey + self.volumen_bakersfield)
+        
+    def es_asignable_por_dimension(self, producto):
+        entra = (producto.dim_producto_alto <= self.dim_interior_alto and
+                 producto.dim_producto_ancho <= self.dim_interior_ancho and
+                 producto.dim_producto_largo <= self.dim_interior_largo)
+        maximo_en_10 = (producto.dim_producto_alto * 1.1 >= self.dim_interior_alto and
+                        producto.dim_producto_ancho * 1.1 >= self.dim_interior_ancho and
+                        producto.dim_producto_largo * 1.1 >= self.dim_interior_largo)
+        return entra and maximo_en_10
+    
+    def asignar_producto(self, producto):
+        if self.es_asignable_por_dimension(producto):
+            self.productos_asignados.append(producto)
+            self.volumen_buenos_aires -= producto.volumen_buenos_aires
+            self.volumen_curitiba -= producto.volumen_curitiba
+            self.volumen_santiago -= producto.volumen_santiago
+            self.volumen_monterrey -= producto.volumen_monterrey
+            self.volumen_bakersfield -= producto.volumen_bakersfield
+        else:
+            print("No es una caja asignable para el producto.")
+    
+    def revocar_producto(self, producto):
+        if producto in self.productos_asignados:
+            self.productos_asignados.remove(producto)
+            self.volumen_buenos_aires += producto.volumen_buenos_aires
+            self.volumen_curitiba += producto.volumen_curitiba
+            self.volumen_santiago += producto.volumen_santiago
+            self.volumen_monterrey += producto.volumen_monterrey
+            self.volumen_bakersfield += producto.volumen_bakersfield
+        else: 
+            print("El producto no usaba este tipo de caja.")
     
     def __repr__(self):
         return (f"<Caja {self.caja_id} | "
