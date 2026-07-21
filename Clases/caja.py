@@ -82,16 +82,22 @@ class Caja:
                 self.unidades_monterrey_req + self.unidades_bakersfield_req)
         
     def es_asignable_por_dimension(self, producto):
-        entra = (producto.dim_producto_alto <= self.dim_interior_alto and
-                 producto.dim_producto_ancho <= self.dim_interior_ancho and
-                 producto.dim_producto_largo <= self.dim_interior_largo)
         maximo_en_10_porcent = (producto.dim_producto_alto * 1.1 >= self.dim_interior_alto and
                                 producto.dim_producto_ancho * 1.1 >= self.dim_interior_ancho and
-                                producto.dim_producto_largo * 1.1 >= self.dim_interior_largo)
+                                producto.dim_producto_largo * 1.1 >= self.dim_interior_largo and
+                                producto.dim_producto_alto * 0.9 <= self.dim_interior_alto and
+                                producto.dim_producto_ancho * 0.9 <= self.dim_interior_ancho and
+                                producto.dim_producto_largo * 0.9 <= self.dim_interior_largo)
+        
         tope_40mm = (producto.dim_producto_alto + 40 >= self.dim_interior_alto and
                     producto.dim_producto_ancho + 40 >= self.dim_interior_ancho and
-                    producto.dim_producto_largo + 40 >= self.dim_interior_largo)
-        return entra and maximo_en_10_porcent and tope_40mm
+                    producto.dim_producto_largo + 40 >= self.dim_interior_largo and
+                    producto.dim_producto_alto - 40 <= self.dim_interior_alto and
+                    producto.dim_producto_ancho - 40 <= self.dim_interior_ancho and
+                    producto.dim_producto_largo - 40 <= self.dim_interior_largo)
+        
+        volumen_mayor = self.volumen_interno() >= producto.volumen_producto()
+        return maximo_en_10_porcent and tope_40mm and volumen_mayor
     
     def asignar_producto(self, producto):
         if self.es_asignable_por_dimension(producto):

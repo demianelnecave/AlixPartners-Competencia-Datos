@@ -26,6 +26,9 @@ class Producto:
         
     def agregar_caja_asignable(self, caja_id):
         self.cajas_asignables.append(caja_id)
+        
+    def volumen_producto(self):
+        return self.dim_producto_alto * self.dim_producto_ancho * self.dim_producto_largo
 
     def __repr__(self):
         return (f"<Producto {self.codigo_producto} | "
