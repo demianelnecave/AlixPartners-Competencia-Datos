@@ -30,11 +30,11 @@ class Caja:
         self.unidades_bakersfield_req = 0
         
         self.costo_unitario = costo_unitario
-        self.descuento_buenos_aires = 0
-        self.descuento_curitiba = 0
-        self.descuento_santiago = 0
-        self.descuento_monterrey = 0
-        self.descuento_bakersfield = 0
+        self.descuento_buenos_aires = 0.0
+        self.descuento_curitiba = 0.0
+        self.descuento_santiago = 0.0
+        self.descuento_monterrey = 0.0
+        self.descuento_bakersfield = 0.0
         
         self.productos_asignados = []
             
@@ -58,6 +58,24 @@ class Caja:
                           4.6: 1450, 4.7: 1500, 4.8: 1550, 5.0: 1650}
         ect = ect_por_grosor[self.grosor_mm]
         return ect / self.perimetro() / 9.81
+
+    def cantidad_cajas_por_pallet(self):
+        cant_cajas_alto = 1800 // self.dim_exterior_alto
+        cant_cajas_ancho = 1200 // self.dim_exterior_ancho
+        cant_cajas_largo = 800 // self.dim_exterior_largo
+        cant_cajas_pallet = cant_cajas_alto * cant_cajas_ancho * cant_cajas_largo
+        return cant_cajas_pallet
+    
+    def utilizacion_pallet(self):
+        volumen_caja = self.dim_exterior_alto * self.dim_exterior_ancho * self.dim_exterior_largo
+        volumen_cajas = volumen_caja * self.cantidad_cajas_por_pallet()
+        volumen_pallet = 1800 * 1200 * 800
+        return volumen_cajas / volumen_pallet
+    
+    def utilizacion_caja(self, producto):
+        volumen_producto = producto.dim_producto_alto * producto.dim_producto_ancho * producto.dim_producto_largo
+        volumen_caja_interna = self.dim_interior_alto * self.dim_interior_ancho * self.dim_interior_largo
+        return volumen_producto / volumen_caja_interna
 
     def unidades_total_requeridas(self):
         return (self.unidades_buenos_aires_req + self.unidades_curitiba_req + self.unidades_santiago_req +
@@ -84,27 +102,39 @@ class Caja:
                 self.__dict__[f'descuento_{planta}'] = calcular_descuento_por_volumen(self.__dict__[f'unidades_{planta}_req'])
         else:
             print("No es una caja asignable para el producto.")
-        
-    def revocar_producto(self, producto):
-        if producto in self.productos_asignados:
-            self.productos_asignados.remove(producto)
-            plantas = ['buenos_aires', 'curitiba', 'santiago', 'monterrey', 'bakersfield']
-            for planta in plantas:
-                self.__dict__[f'unidades_{planta}_req'] -= producto.__dict__[f'demanda_{planta}']
-                self.__dict__[f'descuento_{planta}'] = calcular_descuento_por_volumen(self.__dict__[f'unidades_{planta}_req'])
-        else: 
-            print("El producto no usaba este tipo de caja.")
+    
+    def costo_total_planta(self, planta):
+        unidades = getattr(self, f'unidades_{planta}_req')
+        descuento = getattr(self, f'descuento_{planta}')
+        precio_con_descuento = self.costo_unitario * (1 + descuento)
+        costo = unidades * precio_con_descuento
+        return costo
     
     def costo_total(self):
         costo = 0
         plantas = ['buenos_aires', 'curitiba', 'santiago', 'monterrey', 'bakersfield']
-        
         for planta in plantas:
             unidades_requeridas = getattr(self, f'unidades_{planta}_req')
             descuento = getattr(self, f'descuento_{planta}')
             precio_con_descuento = self.costo_unitario * (1 + descuento)
             costo += unidades_requeridas * precio_con_descuento
-        
+        return costo
+    
+    def costo_producto_planta(self, planta, producto):
+        unidades = getattr(producto, f'demanda_{planta}')
+        descuento = getattr(self, f'descuento_{planta}')
+        precio_con_descuento = self.costo_unitario * (1 + descuento)
+        costo = unidades * precio_con_descuento
+        return costo
+    
+    def costo_producto_total(self, producto):
+        costo = 0
+        plantas = ['buenos_aires', 'curitiba', 'santiago', 'monterrey', 'bakersfield']
+        for planta in plantas:
+            unidades = getattr(producto, f'demanda_{planta}')
+            descuento = getattr(self, f'descuento_{planta}')
+            precio_con_descuento = self.costo_unitario * (1 + descuento)
+            costo += unidades * precio_con_descuento
         return costo
     
     def __repr__(self):
