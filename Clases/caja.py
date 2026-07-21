@@ -11,9 +11,7 @@ def calcular_descuento_por_volumen(volumen):
         return -0.30  # -30% descuento (máximo)
 
 class Caja:
-    def __init__(self, caja_id, dim_interior_ancho, dim_interior_largo, dim_interior_alto, 
-                 compra_buenos_aires, compra_curitiba, compra_santiago, compra_monterrey, compra_bakersfield,
-                 costo_unitario):
+    def __init__(self, caja_id, dim_interior_ancho, dim_interior_largo, dim_interior_alto, costo_unitario):
         
         self.caja_id = caja_id
         self.dim_interior_ancho = dim_interior_ancho
@@ -25,17 +23,11 @@ class Caja:
         self.dim_exterior_largo = 0.0
         self.dim_exterior_alto = 0.0
         
-        self.unidades_buenos_aires = compra_buenos_aires
-        self.unidades_curitiba = compra_curitiba
-        self.unidades_santiago = compra_santiago
-        self.unidades_monterrey = compra_monterrey
-        self.unidades_bakersfield = compra_bakersfield
-        
-        self.unidades_buenos_aires_usadas = 0
-        self.unidades_curitiba_usadas = 0
-        self.unidades_santiago_usadas = 0
-        self.unidades_monterrey_usadas = 0
-        self.unidades_bakersfield_usadas = 0
+        self.unidades_buenos_aires_req = 0
+        self.unidades_curitiba_req = 0
+        self.unidades_santiago_req = 0
+        self.unidades_monterrey_req = 0
+        self.unidades_bakersfield_req = 0
         
         self.costo_unitario = costo_unitario
         self.descuento_buenos_aires = 0
@@ -46,7 +38,7 @@ class Caja:
         
         self.productos_asignados = []
             
-    def cambiar_grosor(self, grosor_mm):
+    def elegir_grosor(self, grosor_mm):
         self.grosor_mm = grosor_mm
         self.dim_exterior_ancho = self.dim_interior_ancho + 2 * grosor_mm
         self.dim_exterior_largo = self.dim_interior_largo + 2 * grosor_mm
@@ -67,30 +59,29 @@ class Caja:
         ect = ect_por_grosor[self.grosor_mm]
         return ect / self.perimetro() / 9.81
 
-    def unidades_total(self):
-        return (self.unidades_buenos_aires + self.unidades_curitiba + self.unidades_santiago +
-                self.unidades_monterrey + self.unidades_bakersfield)
-    
-    def unidades_total_usadas(self):
-        return (self.unidades_buenos_aires_usadas + self.unidades_curitiba_usadas + self.unidades_santiago_usadas +
-                self.unidades_monterrey_usadas + self.unidades_bakersfield_usadas)
+    def unidades_total_requeridas(self):
+        return (self.unidades_buenos_aires_req + self.unidades_curitiba_req + self.unidades_santiago_req +
+                self.unidades_monterrey_req + self.unidades_bakersfield_req)
         
     def es_asignable_por_dimension(self, producto):
         entra = (producto.dim_producto_alto <= self.dim_interior_alto and
                  producto.dim_producto_ancho <= self.dim_interior_ancho and
                  producto.dim_producto_largo <= self.dim_interior_largo)
-        maximo_en_10 = (producto.dim_producto_alto * 1.1 >= self.dim_interior_alto and
-                        producto.dim_producto_ancho * 1.1 >= self.dim_interior_ancho and
-                        producto.dim_producto_largo * 1.1 >= self.dim_interior_largo)
-        return entra and maximo_en_10
+        maximo_en_10_porcent = (producto.dim_producto_alto * 1.1 >= self.dim_interior_alto and
+                                producto.dim_producto_ancho * 1.1 >= self.dim_interior_ancho and
+                                producto.dim_producto_largo * 1.1 >= self.dim_interior_largo)
+        tope_40mm = (producto.dim_producto_alto + 40 >= self.dim_interior_alto and
+                    producto.dim_producto_ancho + 40 >= self.dim_interior_ancho and
+                    producto.dim_producto_largo + 40 >= self.dim_interior_largo)
+        return entra and maximo_en_10_porcent and tope_40mm
     
     def asignar_producto(self, producto):
         if self.es_asignable_por_dimension(producto):
             self.productos_asignados.append(producto)
             plantas = ['buenos_aires', 'curitiba', 'santiago', 'monterrey', 'bakersfield']
             for planta in plantas:
-                self.__dict__[f'unidades_{planta}_usadas'] += producto.__dict__[f'produccion_{planta}']
-                self.__dict__[f'descuento_{planta}'] = calcular_descuento_por_volumen(self.__dict__[f'unidades_{planta}_usadas'])
+                self.__dict__[f'unidades_{planta}_req'] += producto.__dict__[f'demanda_{planta}']
+                self.__dict__[f'descuento_{planta}'] = calcular_descuento_por_volumen(self.__dict__[f'unidades_{planta}_req'])
         else:
             print("No es una caja asignable para el producto.")
         
@@ -99,8 +90,8 @@ class Caja:
             self.productos_asignados.remove(producto)
             plantas = ['buenos_aires', 'curitiba', 'santiago', 'monterrey', 'bakersfield']
             for planta in plantas:
-                self.__dict__[f'unidades_{planta}_usadas'] -= producto.__dict__[f'produccion_{planta}']
-                self.__dict__[f'descuento_{planta}'] = calcular_descuento_por_volumen(self.__dict__[f'unidades_{planta}_usadas'])
+                self.__dict__[f'unidades_{planta}_req'] -= producto.__dict__[f'demanda_{planta}']
+                self.__dict__[f'descuento_{planta}'] = calcular_descuento_por_volumen(self.__dict__[f'unidades_{planta}_req'])
         else: 
             print("El producto no usaba este tipo de caja.")
     
@@ -109,13 +100,14 @@ class Caja:
         plantas = ['buenos_aires', 'curitiba', 'santiago', 'monterrey', 'bakersfield']
         
         for planta in plantas:
-            unidades_usadas = getattr(self, f'unidades_{planta}_usadas')
+            unidades_requeridas = getattr(self, f'unidades_{planta}_req')
             descuento = getattr(self, f'descuento_{planta}')
             precio_con_descuento = self.costo_unitario * (1 + descuento)
-            costo += unidades_usadas * precio_con_descuento
+            costo += unidades_requeridas * precio_con_descuento
         
         return costo
     
     def __repr__(self):
         return (f"<Caja {self.caja_id} | "
-                f"Int: {self.dim_interior_ancho}x{self.dim_interior_largo}x{self.dim_interior_alto}mm>")
+                f"Int: {self.dim_interior_ancho} x {self.dim_interior_largo} x {self.dim_interior_alto}mm | "
+                f"Compra Total: {self.unidades_total_requeridas()}>")
