@@ -17,10 +17,15 @@ class Producto:
         self.dim_producto_ancho = dim_producto_ancho
         self.dim_producto_largo = dim_producto_largo
         self.dim_producto_alto = dim_producto_alto
+        
+        self.cajas_asignables = []
 
     def produccion_total(self):
         return (self.produccion_buenos_aires + self.produccion_curitiba + self.produccion_santiago +
                 self.produccion_monterrey + self.produccion_bakersfield)
+        
+    def agregar_caja_asignable(self, caja_id):
+        self.cajas_asignables.append(caja_id)
 
     def __repr__(self):
         return (f"<Producto {self.codigo_producto} | "

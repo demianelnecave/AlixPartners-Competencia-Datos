@@ -70,6 +70,10 @@ class Caja:
     def unidades_total(self):
         return (self.unidades_buenos_aires + self.unidades_curitiba + self.unidades_santiago +
                 self.unidades_monterrey + self.unidades_bakersfield)
+    
+    def unidades_total_usadas(self):
+        return (self.unidades_buenos_aires_usadas + self.unidades_curitiba_usadas + self.unidades_santiago_usadas +
+                self.unidades_monterrey_usadas + self.unidades_bakersfield_usadas)
         
     def es_asignable_por_dimension(self, producto):
         entra = (producto.dim_producto_alto <= self.dim_interior_alto and
