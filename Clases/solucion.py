@@ -6,7 +6,7 @@ operaciones_planta = pd.read_csv("Datos-finales/operaciones_planta.csv").drop('c
 prod_op_merge = pd.concat([catalogo_productos, operaciones_planta], axis=1)
 
 class Solucion:
-    def __init__(self, grosor):
+    def __init__(self, grosor=None):
         self.grosor_elegido = grosor
         self.asignaciones = []
         self.tipos_cajas_utilizados = []
