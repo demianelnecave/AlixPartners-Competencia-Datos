@@ -16,14 +16,13 @@ class Solucion:
         self.costo_flete_original = 0.0
         self.costo_total_original = 0.0
     
-    def agregar_asignacion(self, producto, caja, descuentos=True):
+    def agregar_asignacion(self, asignacion, descuentos=True):
         if descuentos == True: 
-            caja.asignar_producto(producto)
+            asignacion.caja.asignar_producto(asignacion.producto)
             
-        asignacion = Asignacion(producto, caja)
         self.asignaciones.append(asignacion)
-        if caja not in self.tipos_cajas_utilizados:
-            self.tipos_cajas_utilizados.append(caja)
+        if asignacion.caja not in self.tipos_cajas_utilizados:
+            self.tipos_cajas_utilizados.append(asignacion.caja)
             self.cantidad_tipos_cajas += 1
     
     def costo_packaging(self):
