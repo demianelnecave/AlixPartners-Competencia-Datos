@@ -108,6 +108,16 @@ class Caja:
                 self.__dict__[f'descuento_{planta}'] = calcular_descuento_por_volumen(self.__dict__[f'unidades_{planta}_req'])
         else:
             print("No es una caja asignable para el producto.")
+
+    def revocar_producto(self, producto):
+        if producto in self.productos_asignados:
+            self.productos_asignados.remove(producto)
+            plantas = ['buenos_aires', 'curitiba', 'santiago', 'monterrey', 'bakersfield']
+            for planta in plantas:
+                self.__dict__[f'unidades_{planta}_req'] -= producto.__dict__[f'demanda_{planta}']
+                self.__dict__[f'descuento_{planta}'] = calcular_descuento_por_volumen(self.__dict__[f'unidades_{planta}_req'])
+        else:
+            print("El producto no utiliza este tipo de caja.")
     
     def costo_total_planta(self, planta):
         unidades = getattr(self, f'unidades_{planta}_req')
