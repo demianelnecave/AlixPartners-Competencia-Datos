@@ -16,7 +16,10 @@ class Solucion:
         self.costo_flete_original = 0.0
         self.costo_total_original = 0.0
     
-    def agregar_asignacion(self, producto, caja):
+    def agregar_asignacion(self, producto, caja, descuentos=True):
+        if descuentos == True: 
+            caja.asignar_producto(producto)
+            
         asignacion = Asignacion(producto, caja)
         self.asignaciones.append(asignacion)
         if caja not in self.tipos_cajas_utilizados:
@@ -66,6 +69,9 @@ class Solucion:
         ).drop('volumen_producto_total', axis=1) 
         
         return df_resultados
+    
+    def resumen_general(self):
+        return None
             
     def exportar_submmit(self, nombre_csv):
         datos = []
