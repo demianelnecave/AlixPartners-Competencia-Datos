@@ -81,7 +81,7 @@ class Solucion:
             datos.append({
                 'codigo_producto': producto.codigo_producto,
                 'volumen_producto_total': producto.demanda_total(),
-                'caja_grosor_mm': self.grosor_elegido,
+                'caja_grosor_mm': caja.grosor_mm,
                 'caja_exterior_largo': caja.dim_exterior_largo,
                 'caja_exterior_ancho': caja.dim_exterior_ancho,
                 'caja_exterior_alto': caja.dim_exterior_alto
