@@ -6,7 +6,7 @@ operaciones_planta = pd.read_csv("Datos-finales/operaciones_planta.csv").drop('c
 prod_op_merge = pd.concat([catalogo_productos, operaciones_planta], axis=1)
 
 class Solucion:
-    def __init__(self, grosor):
+    def __init__(self, grosor=None):
         self.grosor_elegido = grosor
         self.asignaciones = []
         self.tipos_cajas_utilizados = []
@@ -16,14 +16,13 @@ class Solucion:
         self.costo_flete_original = 0.0
         self.costo_total_original = 0.0
     
-    def agregar_asignacion(self, producto, caja, descuentos=True):
+    def agregar_asignacion(self, asignacion, descuentos=True):
         if descuentos == True: 
-            caja.asignar_producto(producto)
+            asignacion.caja.asignar_producto(asignacion.producto)
             
-        asignacion = Asignacion(producto, caja)
         self.asignaciones.append(asignacion)
-        if caja not in self.tipos_cajas_utilizados:
-            self.tipos_cajas_utilizados.append(caja)
+        if asignacion.caja not in self.tipos_cajas_utilizados:
+            self.tipos_cajas_utilizados.append(asignacion.caja)
             self.cantidad_tipos_cajas += 1
     
     def costo_packaging(self):
@@ -81,7 +80,7 @@ class Solucion:
             datos.append({
                 'codigo_producto': producto.codigo_producto,
                 'volumen_producto_total': producto.demanda_total(),
-                'caja_grosor_mm': self.grosor_elegido,
+                'caja_grosor_mm': caja.grosor_mm,
                 'caja_exterior_largo': caja.dim_exterior_largo,
                 'caja_exterior_ancho': caja.dim_exterior_ancho,
                 'caja_exterior_alto': caja.dim_exterior_alto
