@@ -16,7 +16,8 @@ class Solucion:
         self.costo_packaging_original = 30295472.424999997
         self.costo_flete_original = 179068800
         self.costo_total_original = 209364272.425
-        self.utilizacion_pallet_promedio_original = 0.8369364400001816
+        self.utilizacion_pallet_promedio_original = 0.8320794116391749
+        self.utilizacion_caja_promedio_original = 1.0
     
     def agregar_asignacion(self, asignacion, descuentos=True):
         if descuentos == True: 
@@ -44,9 +45,19 @@ class Solucion:
     
     def utilizacion_pallet_promedio(self):
         total = 0
+        cajas_usadas = 0
         for caja in self.tipos_cajas_utilizados:
-            total += caja.utilizacion_pallet()
-        return total / self.cantidad_tipos_cajas
+            cajas_usadas += caja.unidades_total_requeridas()
+            total += caja.utilizacion_pallet() * caja.unidades_total_requeridas()
+        return total / cajas_usadas
+
+    def utilizacion_caja_promedio(self):
+        total = 0
+        demanda_total = 0
+        for asignacion in self.asignaciones:
+            demanda_total += asignacion.producto.demanda_total()
+            total += asignacion.utilizacion_caja() * asignacion.producto.demanda_total()
+        return total / demanda_total
 
     def resumen_por_asignacion(self):
         datos = []
@@ -59,9 +70,15 @@ class Solucion:
                 'codigo_producto': producto.codigo_producto,
                 'volumen_producto_total': producto.demanda_total(),
                 'demanda_total': producto.demanda_total(),
+                'cant_cajas_asignables': len(producto.cajas_asignables),
                 'caja_id': caja.caja_id,
                 'utilizacion_pallet': caja.utilizacion_pallet(),
                 'utilizacion_caja': asignacion.utilizacion_caja(),
+                'descuento_buenos_aires': asignacion.caja.descuento_buenos_aires,
+                'descuento_curitiba': asignacion.caja.descuento_curitiba,
+                'descuento_santiago': asignacion.caja.descuento_santiago,
+                'descuento_monterrey': asignacion.caja.descuento_monterrey,
+                'descuento_bakersfield': asignacion.caja.descuento_bakersfield,
                 'costo_packaging': costo_packaging,
                 'cant_pallets': cant_pallets,
                 'costo_flete': 150 * cant_pallets,
@@ -85,6 +102,7 @@ class Solucion:
         print(f"Costo flete: {self.costo_flete_original}")
         print(f"Costo total: {self.costo_total_original}")
         print(f"Utilización de pallet promedio: {self.utilizacion_pallet_promedio_original}")
+        print(f"Utilización de caja promedio: {self.utilizacion_caja_promedio_original}")
 
         print("\nSituación nueva")
         print("-" * 50)
@@ -95,6 +113,7 @@ class Solucion:
         print(f"Costo flete: {self.costo_flete()}")
         print(f"Costo total: {self.costo_total()}")
         print(f"Utilización de pallet promedio: {self.utilizacion_pallet_promedio()}")
+        print(f"Utilización de caja promedio: {self.utilizacion_caja_promedio()}")
             
     def exportar_submmit(self, nombre_csv):
         datos = []
