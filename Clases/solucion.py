@@ -12,9 +12,11 @@ class Solucion:
         self.tipos_cajas_utilizados = []
         self.cantidad_tipos_cajas = 0   
         
-        self.costo_packaging_original = 0.0
-        self.costo_flete_original = 0.0
-        self.costo_total_original = 0.0
+        self.cantidad_tipos_cajas_original = 204
+        self.costo_packaging_original = 30295472.424999997
+        self.costo_flete_original = 179068800
+        self.costo_total_original = 209364272.425
+        self.utilizacion_pallet_promedio_original = 0.8369364400001816
     
     def agregar_asignacion(self, asignacion, descuentos=True):
         if descuentos == True: 
@@ -39,6 +41,12 @@ class Solucion:
     
     def costo_total(self):
         return self.costo_packaging() + self.costo_flete()
+    
+    def utilizacion_pallet_promedio(self):
+        total = 0
+        for caja in self.tipos_cajas_utilizados:
+            total += caja.utilizacion_pallet()
+        return total / self.cantidad_tipos_cajas
 
     def resumen_por_asignacion(self):
         datos = []
@@ -70,7 +78,21 @@ class Solucion:
         return df_resultados
     
     def resumen_general(self):
-        return None
+        print("Situación original")
+        print("-" * 50)
+        print(f"Número de tipos de cajas distintos: {self.cantidad_tipos_cajas_original}")
+        print(f"Costo packaging: {self.costo_packaging_original}")
+        print(f"Costo flete: {self.costo_flete_original}")
+        print(f"Costo total: {self.costo_total_original}")
+        print(f"Utilización de pallet promedio: {self.utilizacion_pallet_promedio()}")
+
+        print("\nSituación nueva")
+        print("-" * 50)
+        print(f"Número de tipos de cajas distintos: {self.cantidad_tipos_cajas}")
+        print(f"Costo packaging: {self.costo_packaging()}")
+        print(f"Costo flete: {self.costo_flete()}")
+        print(f"Costo total: {self.costo_total()}")
+        print(f"Utilización de pallet promedio: {self.utilizacion_pallet_promedio()}")
             
     def exportar_submmit(self, nombre_csv):
         datos = []
