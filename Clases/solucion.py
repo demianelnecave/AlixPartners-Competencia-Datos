@@ -84,10 +84,12 @@ class Solucion:
         print(f"Costo packaging: {self.costo_packaging_original}")
         print(f"Costo flete: {self.costo_flete_original}")
         print(f"Costo total: {self.costo_total_original}")
-        print(f"Utilización de pallet promedio: {self.utilizacion_pallet_promedio()}")
+        print(f"Utilización de pallet promedio: {self.utilizacion_pallet_promedio_original}")
 
         print("\nSituación nueva")
         print("-" * 50)
+        if self.grosor_elegido != None:
+            print(f"Grosor elegido: {self.grosor_elegido}mm")
         print(f"Número de tipos de cajas distintos: {self.cantidad_tipos_cajas}")
         print(f"Costo packaging: {self.costo_packaging()}")
         print(f"Costo flete: {self.costo_flete()}")
