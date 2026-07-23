@@ -60,7 +60,7 @@ class Caja:
         ect_por_grosor = {2.5: 600, 2.7: 730, 3.0: 1000, 4.1: 1200, 4.5: 1400, 
                           4.6: 1450, 4.7: 1500, 4.8: 1550, 5.0: 1650}
         ect = ect_por_grosor[self.grosor_mm]
-        return ect / self.perimetro() / 9.81
+        return ect * self.perimetro() / 9.81
 
     def cantidad_cajas_por_pallet(self):
         '''

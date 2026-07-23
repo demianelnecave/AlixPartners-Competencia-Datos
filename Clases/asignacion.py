@@ -24,10 +24,25 @@ class Asignacion:
         return maximo_en_10_porcent and tope_40mm and volumen_mayor
     
     def validar_por_headspace(self):
-        return True
+        grosor = self.caja.grosor_mm
+        headspace_por_grosor = {3: 0.06, 4.5: 0.08, 5: 0.1}
+        headspace = headspace_por_grosor[grosor]
+        
+        chequeo = (self.caja.dim_interior_alto * (1 - headspace) <= self.producto.dim_producto_alto and
+                   self.caja.dim_interior_ancho * (1 - headspace) <= self.producto.dim_producto_ancho and
+                   self.caja.dim_interior_largo * (1 - headspace) <= self.producto.dim_producto_largo)
+        
+        return chequeo
     
-    def validar_por_resistencia(self):
-        return True
+    def validar_por_resistencia(self):        
+        carga_maxima = self.caja.carga_maxima()
+        
+        # Calculemos y comparemos con el peso total de las cajas apiladas
+        cant_cajas_alto = 1800 // self.caja.dim_exterior_alto
+        peso_caja = self.producto.peso_caja
+        peso_total = peso_caja * cant_cajas_alto
+        
+        return carga_maxima >= peso_total
     
     def es_asignacion_valida(self):
         return self.validar_por_dimension() and self.validar_por_headspace() and self.validar_por_resistencia()
