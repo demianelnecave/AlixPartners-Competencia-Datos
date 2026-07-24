@@ -6,12 +6,9 @@ class Asignacion:
         self.producto = producto
         self.caja = caja
 
-    def validar_por_dimension(self):
+    def validar_por_dimension_maxima(self):
         caja_redimensionada = copy.deepcopy(self.caja)
-        caja_redimensionada.dim_interior_alto *= 1.1
-        caja_redimensionada.dim_interior_ancho *= 1.1
-        caja_redimensionada.dim_interior_largo *= 1.1
-        
+        caja_redimensionada.redimensionar(1.1, 1.1, 1.1)
         volumen_mayor = caja_redimensionada.volumen_interno() >= self.producto.volumen_producto()
         return volumen_mayor
     
@@ -43,7 +40,7 @@ class Asignacion:
         return carga_maxima >= peso_total
     
     def es_asignacion_valida(self):
-        return self.validar_por_dimension() and self.validar_por_headspace() and self.validar_por_resistencia()
+        return self.validar_por_dimension_maxima() and self.validar_por_headspace() and self.validar_por_resistencia()
 
     def utilizacion_caja(self):
         volumen_producto = self.producto.dim_producto_alto * self.producto.dim_producto_ancho * self.producto.dim_producto_largo
