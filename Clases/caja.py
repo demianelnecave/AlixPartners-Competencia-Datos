@@ -41,6 +41,7 @@ class Caja:
         self.descuento_monterrey = 0.0
         self.descuento_bakersfield = 0.0
         
+        self.redimensiones_validas = []
         self.productos_asignados = []
             
     def elegir_grosor(self, grosor_mm):

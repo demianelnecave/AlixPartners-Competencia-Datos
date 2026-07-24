@@ -1,5 +1,4 @@
 import math
-import copy
 
 class Asignacion:
     def __init__(self, producto, caja):
