@@ -41,7 +41,6 @@ class Caja:
         self.descuento_monterrey = 0.0
         self.descuento_bakersfield = 0.0
         
-        self.redimensiones_validas = []
         self.productos_asignados = []
             
     def elegir_grosor(self, grosor_mm):
@@ -172,7 +171,8 @@ class Caja:
                     combinacion = {'alto': caja_redimensionada.dim_interior_alto, 
                                    'ancho': caja_redimensionada.dim_interior_ancho, 
                                    'largo': caja_redimensionada.dim_interior_largo, 
-                                   'utilizacion_pallet': utilizacion}
+                                   'utilizacion_pallet': utilizacion,
+                                   'cantidad_cajas_pallet': caja_redimensionada.cantidad_cajas_por_pallet()}
                     combinaciones.append(combinacion)
 
         combinaciones_ordenadas = sorted(combinaciones, key=lambda x: x['utilizacion_pallet'], reverse=True)
