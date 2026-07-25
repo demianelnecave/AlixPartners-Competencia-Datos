@@ -10,8 +10,21 @@ class Asignacion:
         self.redimensiones_validas.append(redimension)
 
     def validar_por_dimension(self):
-        volumen_mayor = self.caja.volumen_interno() >= self.producto.volumen_producto()
-        return volumen_mayor
+        # 1. Volumen
+        if self.caja.volumen_interno() < self.producto.volumen_producto():
+            return False
+        
+        # 2. Variación máxima del 10% en cada eje (¡NUEVO!)
+        # Ojo: necesitás guardar las dimensiones originales de la caja
+        # Si no las tenés, agregá atributos como dim_original_alto, etc.
+        variacion_alto = abs(self.caja.dim_interior_alto - self.producto.dim_producto_alto) / self.producto.dim_producto_alto
+        variacion_ancho = abs(self.caja.dim_interior_ancho - self.producto.dim_producto_ancho) / self.producto.dim_producto_ancho
+        variacion_largo = abs(self.caja.dim_interior_largo - self.producto.dim_producto_largo) / self.producto.dim_producto_largo
+        
+        if variacion_alto > 0.10 or variacion_ancho > 0.10 or variacion_largo > 0.10:
+            return False
+        
+        return True
     
     def validar_por_headspace(self):
         grosor = self.caja.grosor_mm
