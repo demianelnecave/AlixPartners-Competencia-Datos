@@ -146,28 +146,22 @@ class Caja:
         puntos = np.unique(puntos)
         return puntos
 
-    def buscar_redimensionamiento_optimo(self):           
+    def redimensionamientos_posibles(self):           
         # Obtener puntos de quiebre
         opciones_alto = self.puntos_quiebre('alto')
         opciones_ancho = self.puntos_quiebre('ancho')
         opciones_largo = self.puntos_quiebre('largo')
         
         combinaciones = []
-        mejor_opcion = []
-        mejor_utilizacion_pallet = 0
         
         for alto in opciones_alto:
             for ancho in opciones_ancho:
                 for largo in opciones_largo:
                     caja_redimensionada = copy.deepcopy(self)
-                    caja_redimensionada.redimensionar(alto, ancho, largo)
-                    
-                    # Evaluamos según la métrica de utilizacion de pallet
+                    caja_redimensionada.redimensionar(alto, ancho, largo)                    
                     utilizacion = caja_redimensionada.utilizacion_pallet()
-                    if utilizacion > mejor_utilizacion_pallet:
-                        mejor_utilizacion_pallet = utilizacion
-                        mejor_opcion = [alto, ancho, largo, utilizacion]
                     
+                    # Agregamos la combinacion
                     combinacion = {'alto': caja_redimensionada.dim_interior_alto, 
                                    'ancho': caja_redimensionada.dim_interior_ancho, 
                                    'largo': caja_redimensionada.dim_interior_largo, 
@@ -176,7 +170,7 @@ class Caja:
                     combinaciones.append(combinacion)
 
         combinaciones_ordenadas = sorted(combinaciones, key=lambda x: x['utilizacion_pallet'], reverse=True)
-        return mejor_opcion, combinaciones_ordenadas
+        return combinaciones_ordenadas
 
     def unidades_total_requeridas(self):
         return (self.unidades_buenos_aires_req + self.unidades_curitiba_req + self.unidades_santiago_req +

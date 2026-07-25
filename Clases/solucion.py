@@ -70,7 +70,6 @@ class Solucion:
                 'codigo_producto': producto.codigo_producto,
                 'volumen_producto_total': producto.demanda_total(),
                 'demanda_total': producto.demanda_total(),
-                'cant_cajas_asignables': len(producto.cajas_asignables),
                 'caja_id': caja.caja_id,
                 'utilizacion_pallet': caja.utilizacion_pallet(),
                 'utilizacion_caja': asignacion.utilizacion_caja(),

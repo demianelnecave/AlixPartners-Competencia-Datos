@@ -4,6 +4,10 @@ class Asignacion:
     def __init__(self, producto, caja):
         self.producto = producto
         self.caja = caja
+        self.redimensiones_validas = []
+        
+    def agregar_redimension_valida(self, redimension):    
+        self.redimensiones_validas.append(redimension)
 
     def validar_por_dimension(self):
         volumen_mayor = self.caja.volumen_interno() >= self.producto.volumen_producto()

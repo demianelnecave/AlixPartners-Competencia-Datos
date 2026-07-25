@@ -18,14 +18,9 @@ class Producto:
         self.dim_producto_largo = dim_producto_largo
         self.dim_producto_alto = dim_producto_alto
         
-        self.cajas_asignables = []
-
     def demanda_total(self):
         return (self.demanda_buenos_aires + self.demanda_curitiba + self.demanda_santiago +
                 self.demanda_monterrey + self.demanda_bakersfield)
-        
-    def agregar_caja_asignable(self, caja_id):
-        self.cajas_asignables.append(caja_id)
         
     def volumen_producto(self):
         return self.dim_producto_alto * self.dim_producto_ancho * self.dim_producto_largo
