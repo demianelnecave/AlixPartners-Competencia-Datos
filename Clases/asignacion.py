@@ -4,31 +4,22 @@ class Asignacion:
     def __init__(self, producto, caja):
         self.producto = producto
         self.caja = caja
-        self.redimensiones_validas = []
-        
-    def agregar_redimension_valida(self, redimension):    
-        self.redimensiones_validas.append(redimension)
 
     def validar_por_dimension(self):
-        # 1. Volumen
-        if self.caja.volumen_interno() < self.producto.volumen_producto():
-            return False
+        # El producto debe entrar en la nueva caja
+        volumen_menor = self.caja.volumen_interno() >= self.producto.volumen_producto()
         
-        # 2. Variación máxima del 10% en cada eje (¡NUEVO!)
-        # Ojo: necesitás guardar las dimensiones originales de la caja
-        # Si no las tenés, agregá atributos como dim_original_alto, etc.
+        # Solo podemos variar en 10% la dimensión interna de la original
         variacion_alto = abs(self.caja.dim_interior_alto - self.producto.dim_producto_alto) / self.producto.dim_producto_alto
         variacion_ancho = abs(self.caja.dim_interior_ancho - self.producto.dim_producto_ancho) / self.producto.dim_producto_ancho
         variacion_largo = abs(self.caja.dim_interior_largo - self.producto.dim_producto_largo) / self.producto.dim_producto_largo
+        variacion_en_10 = variacion_alto <= 0.1 and variacion_ancho <= 0.1 and variacion_largo <= 0.1
         
-        if variacion_alto > 0.10 or variacion_ancho > 0.10 or variacion_largo > 0.10:
-            return False
-        
-        return True
+        return volumen_menor and variacion_en_10
     
     def validar_por_headspace(self):
         grosor = self.caja.grosor_mm
-        headspace_por_grosor = {3: 0.06, 4.5: 0.08, 5: 0.1}
+        headspace_por_grosor = {3: 0.06, 4.5: 0.08, 5: 0.1} # El headspace maximo depende del grosor
         headspace_max = headspace_por_grosor[grosor]
         
         headspace_alto = self.caja.dim_interior_alto - self.producto.dim_producto_alto
@@ -39,6 +30,7 @@ class Asignacion:
                              headspace_ancho / self.caja.dim_interior_ancho <= headspace_max and
                              headspace_largo / self.caja.dim_interior_largo <= headspace_max)
         
+        # Además hay un tope de 40mm por cada headspace
         tope_40mm = headspace_alto <= 40 and headspace_ancho <= 40 and headspace_largo <= 40
         
         return chequeo_headspace and tope_40mm

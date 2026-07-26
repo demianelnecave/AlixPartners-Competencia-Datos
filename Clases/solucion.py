@@ -2,26 +2,25 @@ import pandas as pd  # type: ignore[reportMissingImports]
 from Clases.asignacion import Asignacion
 
 catalogo_productos = pd.read_csv("Datos-finales/catalogo_productos.csv")
-operaciones_planta = pd.read_csv("Datos-finales/operaciones_planta.csv").drop('codigo_producto', axis=1) 
-prod_op_merge = pd.concat([catalogo_productos, operaciones_planta], axis=1)
 
 class Solucion:
-    def __init__(self, grosor=None):
+    def __init__(self, grosor, titulo):
         self.grosor_elegido = grosor
+        self.titulo = titulo
         self.asignaciones = []
         self.tipos_cajas_utilizados = []
         self.cantidad_tipos_cajas = 0   
         
         self.cantidad_tipos_cajas_original = 204
-        self.costo_packaging_original = 30295472.424999997
+        self.costo_packaging_original = 30166293.939999998
         self.costo_flete_original = 179068800
-        self.costo_total_original = 209364272.425
+        self.costo_total_original = 209235093.94
         self.utilizacion_pallet_promedio_original = 0.8320794116391749
         self.utilizacion_caja_promedio_original = 1.0
     
-    def agregar_asignacion(self, asignacion, descuentos=True):
-        if descuentos == True: 
-            asignacion.caja.asignar_producto(asignacion.producto)
+    def agregar_asignacion(self, asignacion):
+        # Asignamos el tipo de caja al producto para aplicar descuentos
+        asignacion.caja.asignar_producto(asignacion.producto)
             
         self.asignaciones.append(asignacion)
         if asignacion.caja not in self.tipos_cajas_utilizados:
@@ -42,6 +41,9 @@ class Solucion:
     
     def costo_total(self):
         return self.costo_packaging() + self.costo_flete()
+    
+    def ahorro_total_porcent(self):
+        return 1 - self.costo_total() / self.costo_total_original
     
     def utilizacion_pallet_promedio(self):
         total = 0
@@ -85,12 +87,11 @@ class Solucion:
             })
         
         df_resultados = pd.DataFrame(datos)
-        df_resultados = prod_op_merge[['codigo_producto', 'volumen_producto_total']].merge(
+        df_resultados = catalogo_productos[['codigo_producto']].merge(
             df_resultados, 
-            on=['codigo_producto', 'volumen_producto_total'], 
+            on='codigo_producto',
             how='inner'
-        ).drop('volumen_producto_total', axis=1) 
-        
+        )
         return df_resultados
     
     def resumen_general(self):
@@ -105,14 +106,15 @@ class Solucion:
 
         print("\nSituación nueva")
         print("-" * 50)
-        if self.grosor_elegido != None:
-            print(f"Grosor elegido: {self.grosor_elegido}mm")
+        print(f"Grosor elegido: {self.grosor_elegido}mm")
+        print(f"Criterio elegido: {self.titulo}")
         print(f"Número de tipos de cajas distintos: {self.cantidad_tipos_cajas}")
         print(f"Costo packaging: {self.costo_packaging()}")
         print(f"Costo flete: {self.costo_flete()}")
         print(f"Costo total: {self.costo_total()}")
         print(f"Utilización de pallet promedio: {self.utilizacion_pallet_promedio()}")
         print(f"Utilización de caja promedio: {self.utilizacion_caja_promedio()}")
+        print(f"Ahorro costo total: {self.ahorro_total_porcent():.5%}")
             
     def exportar_submmit(self, nombre_csv):
         datos = []
@@ -121,7 +123,6 @@ class Solucion:
             caja = asignacion.caja
             datos.append({
                 'codigo_producto': producto.codigo_producto,
-                'volumen_producto_total': producto.demanda_total(),
                 'caja_grosor_mm': caja.grosor_mm,
                 'caja_exterior_largo': caja.dim_exterior_largo,
                 'caja_exterior_ancho': caja.dim_exterior_ancho,
@@ -129,11 +130,9 @@ class Solucion:
             })
 
         df_resultados = pd.DataFrame(datos)
-        
-        df_resultados = prod_op_merge[['codigo_producto', 'volumen_producto_total']].merge(
+        df_resultados = catalogo_productos[['codigo_producto']].merge(
             df_resultados, 
-            on=['codigo_producto', 'volumen_producto_total'], 
+            on='codigo_producto',
             how='inner'
-        ).drop('volumen_producto_total', axis=1) 
-        
+        )
         df_resultados.to_csv(f"Soluciones/solucion{nombre_csv}.csv", index=False)
