@@ -8,8 +8,6 @@ class Solucion:
         self.grosor_elegido = grosor
         self.titulo = titulo
         self.asignaciones = []
-        self.tipos_cajas_utilizados = []
-        self.cantidad_tipos_cajas = 0   
         
         self.cantidad_tipos_cajas_original = 204
         self.costo_packaging_original = 30166293.939999998
@@ -21,11 +19,17 @@ class Solucion:
     def agregar_asignacion(self, asignacion):
         # Asignamos el tipo de caja al producto para aplicar descuentos
         asignacion.caja.asignar_producto(asignacion.producto)
-            
         self.asignaciones.append(asignacion)
-        if asignacion.caja not in self.tipos_cajas_utilizados:
-            self.tipos_cajas_utilizados.append(asignacion.caja)
-            self.cantidad_tipos_cajas += 1
+    
+    def cambiar_asignacion(self, asignacion, caja):
+        asignacion.caja = caja
+    
+    def tipos_cajas_utilizados(self):
+        tipos_cajas = []
+        for asignacion in self.asignaciones:
+            if asignacion.caja not in tipos_cajas:
+                tipos_cajas.append(asignacion.caja)
+        return tipos_cajas
     
     def costo_packaging(self):
         costo = 0
@@ -48,7 +52,7 @@ class Solucion:
     def utilizacion_pallet_promedio(self):
         total = 0
         cajas_usadas = 0
-        for caja in self.tipos_cajas_utilizados:
+        for caja in self.tipos_cajas_utilizados():
             cajas_usadas += caja.unidades_total_requeridas()
             total += caja.utilizacion_pallet() * caja.unidades_total_requeridas()
         return total / cajas_usadas
@@ -108,7 +112,7 @@ class Solucion:
         print("-" * 50)
         print(f"Grosor elegido: {self.grosor_elegido}mm")
         print(f"Criterio elegido: {self.titulo}")
-        print(f"Número de tipos de cajas distintos: {self.cantidad_tipos_cajas}")
+        print(f"Número de tipos de cajas distintos: {len(self.tipos_cajas_utilizados())}")
         print(f"Costo packaging: {self.costo_packaging()}")
         print(f"Costo flete: {self.costo_flete()}")
         print(f"Costo total: {self.costo_total()}")
