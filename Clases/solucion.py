@@ -22,8 +22,16 @@ class Solucion:
         self.asignaciones.append(asignacion)
     
     def cambiar_asignacion(self, asignacion, caja):
-        asignacion.caja = caja
-    
+        caja_anterior = asignacion.caja
+        caja_anterior.revocar_producto(asignacion.producto)
+        
+        producto = asignacion.producto
+        for asignacion in self.asignaciones:
+            if asignacion.producto == producto:
+                asignacion.caja = caja
+                asignacion.caja.asignar_producto(producto)
+                break
+            
     def tipos_cajas_utilizados(self):
         tipos_cajas = []
         for asignacion in self.asignaciones:

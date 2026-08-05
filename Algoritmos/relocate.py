@@ -3,25 +3,35 @@ from Clases.caja import Caja
 from Clases.producto import Producto
 from Clases.solucion import Solucion
 
-def relocate(solucion, cajas, cajas_asignables_por_producto, titulo_solucion):
+def relocate(solucion, productos, cajas, cajas_asignables_por_producto, titulo_solucion):
     mejorable = True
     solucion.titulo = titulo_solucion
+    
+    cajas_solucion = []
+    for asignacion in solucion.asignaciones:
+        if asignacion.caja not in cajas_solucion:
+            cajas_solucion.append(asignacion.caja)
     
     while mejorable: 
         mejorable = False  
         print("Hola")  
-        for asignacion in solucion.asignaciones:
-            producto = asignacion.producto
+        for codigo, producto in productos.items():
+            for asig in solucion.asignaciones:
+                if asig.producto == producto:
+                    asignacion = asig
+            
             caja_original = asignacion.caja
             mejor_costo_total = solucion.costo_total()
+            print(mejor_costo_total)
             
-            for caja_id in cajas_asignables_por_producto[producto.codigo_producto]:
-                caja = cajas[caja_id]
-                solucion.cambiar_asignacion(asignacion, caja)
-                
-                if solucion.costo_total() >= mejor_costo_total: # Si no mejora el costo, reasigno el original}
-                    solucion.cambiar_asignacion(asignacion, caja_original)
-                else:
-                    mejor_costo_total = solucion.costo_total()
-                    mejorable = True
-                    print(solucion.costo_total())
+            for caja in cajas_solucion:
+                caja_id = caja.caja_id
+                if caja_id in cajas_asignables_por_producto[producto.codigo_producto]:
+                    solucion.cambiar_asignacion(asignacion, caja)
+                    
+                    if solucion.costo_total() >= mejor_costo_total: # Si no mejora el costo, reasigno el original
+                        solucion.cambiar_asignacion(asignacion, caja_original)
+                    else:
+                        print("Baja de ", mejor_costo_total, "a ", solucion.costo_total())
+                        mejor_costo_total = solucion.costo_total()
+                        mejorable = True
