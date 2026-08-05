@@ -3,7 +3,7 @@ from Clases.caja import Caja
 from Clases.producto import Producto
 from Clases.solucion import Solucion
 
-def relocate(solucion, productos, cajas, cajas_asignables_por_producto, titulo_solucion):
+def relocate(solucion, productos, cajas_asignables_por_producto, titulo_solucion):
     mejorable = True
     solucion.titulo = titulo_solucion
     
@@ -14,7 +14,6 @@ def relocate(solucion, productos, cajas, cajas_asignables_por_producto, titulo_s
     
     while mejorable: 
         mejorable = False  
-        print("Hola")  
         for codigo, producto in productos.items():
             for asig in solucion.asignaciones:
                 if asig.producto == producto:
@@ -22,7 +21,6 @@ def relocate(solucion, productos, cajas, cajas_asignables_por_producto, titulo_s
             
             caja_original = asignacion.caja
             mejor_costo_total = solucion.costo_total()
-            print(mejor_costo_total)
             
             for caja in cajas_solucion:
                 caja_id = caja.caja_id
@@ -33,5 +31,6 @@ def relocate(solucion, productos, cajas, cajas_asignables_por_producto, titulo_s
                         solucion.cambiar_asignacion(asignacion, caja_original)
                     else:
                         print("Baja de ", mejor_costo_total, "a ", solucion.costo_total())
+                        caja_original = caja
                         mejor_costo_total = solucion.costo_total()
                         mejorable = True
