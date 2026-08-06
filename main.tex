@@ -1,0 +1,340 @@
+\documentclass[11pt]{article}
+
+% ---------- Paquetes ----------
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{parskip}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs} % Para líneas tipográficas profesionales
+\usepackage{enumitem}
+\usepackage{xcolor} % Opcional, para resaltar palabras claves si lo deseas
+\usepackage[hidelinks,colorlinks=true,linkcolor=black,urlcolor=black]{hyperref}
+
+% ---------- Colores ----------
+\definecolor{bonsaigreen}{HTML}{2E5339}
+\definecolor{notegray}{HTML}{808080}
+\definecolor{placeholdergray}{HTML}{BFBFBF}
+\definecolor{subgray}{HTML}{444444}
+
+% ---------- Estilo de títulos ----------
+\titleformat{\section}{\color{bonsaigreen}\normalfont\Large\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\color{subgray}\normalfont\large\bfseries}{\thesubsection}{0.5em}{}
+\titlespacing*{\section}{0pt}{18pt}{8pt}
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+
+\setlength{\parskip}{6pt}
+\setlength{\parindent}{0pt}
+
+% ---------- Comandos auxiliares ----------
+% Nota guía: texto itálico gris, se borra al escribir el contenido final
+\newcommand{\nota}[1]{{\itshape\color{notegray}\small NOTA: #1}\par\vspace{2pt}}
+% Lista de puntos dentro de una nota guía
+\newenvironment{notalist}{\begin{itemize}[itemsep=1pt,topsep=2pt,leftmargin=1.4em]\itshape\color{notegray}\small}{\end{itemize}\vspace{2pt}}
+% Placeholder de contenido a completar
+\newcommand{\placeholder}{\color{placeholdergray}[Escribir contenido acá]\color{black}\par\vspace{6pt}}
+
+\begin{document}
+
+% =========================================================
+% PORTADA
+% =========================================================
+\begin{titlepage}
+\centering
+\vspace*{4cm}
+{\color{bonsaigreen}\bfseries\large BONSAI CORP}\\[0.6cm]
+{\bfseries\Huge Optimización de Packaging y Logística}\\[0.4cm]
+{\color{notegray}\Large Informe Final --- Competencia de Datos AlixPartners}\\[2cm]
+
+\large
+Integrantes: Demián Elnecavé, Denis Wu, Emiliana Verdun\\[0.3cm]
+Fecha de entrega: [dd/mm/aaaa]\\[0.3cm]
+\nota{\color{red}ACORDARSE DE COMPLETAR, QUITAR NOMBRES Y DIRECCIONES DE MAIL}
+
+
+Equipo en Kaggle: Zero Degree\\[0.3cm]
+
+\end{titlepage}
+
+% =========================================================
+% ÍNDICE
+% =========================================================
+\tableofcontents
+\nota{El índice se genera y actualiza automáticamente al compilar (puede requerir compilar dos veces para que los números de página queden correctos).}
+\newpage
+
+% =========================================================
+% 1. RESUMEN EJECUTIVO
+% =========================================================
+\section{Resumen ejecutivo}
+
+\nota{Media página máximo. Es lo primero (y a veces lo único) que lee el evaluador --- tiene que poder entender el resultado sin leer el resto.}
+\begin{notalist}
+\item Ahorro total logrado (USD y \%) vs. situación actual, desglosado en packaging y flete.
+\item Reducción de \texttt{N\_tipos} de caja (de X a Y tipos).
+\item 2--3 bullets con las decisiones clave que explican el resultado.
+\item Una frase que mencione que se respetaron todas las restricciones (headspace, resistencia, fit, un producto por pallet).
+\end{notalist}
+\placeholder
+
+% =========================================================
+% 2. CONTEXTO Y OBJETIVO DEL DESAFÍO
+% =========================================================
+\section{Contexto y objetivo del desafío}
+
+\subsection{El problema de negocio}
+
+Bonsai Corp distribuye brócoli congelado desde 5 plantas hacia 5 regiones, y comercializa
+un portafolio amplio de alrededor de 500 variantes de producto. Históricamente, cada nuevo
+lanzamiento incorporó su propia caja secundaria --el envase de cartón que agrupa las
+unidades del producto y que luego se apila en pallets para su transporte--- sin evaluar si
+alguna caja ya existente podía reutilizarse. Como resultado, el catálogo actual está
+compuesto por cientos de tipos de caja distintos, muchos de ellos con dimensiones
+prácticamente idénticas entre sí.
+
+Esta fragmentación tiene un costo real y creciente: cada tipo de caja implica su propio
+molde de fabricación, sus propias corridas de producción con el proveedor y su propio
+stock en depósito. Además, al pedirse en volúmenes bajos, muchos tipos de caja no acceden
+a los descuentos por volumen que ofrece el proveedor, lo que encarece el costo unitario de
+packaging. El problema no es exclusivamente de packaging: la eficiencia con la que las
+cajas se apilan en el pallet determina también cuántos pallets se necesitan para
+transportar la producción anual, y por lo tanto el costo de flete. Sin un criterio de
+consolidación, el catálogo seguirá creciendo con cada nuevo lanzamiento, y con él, los
+costos asociados.
+
+\subsection{Objetivo de la optimización}
+
+El objetivo del proyecto es reducir la cantidad de tipos de caja del catálogo,
+consolidando productos con dimensiones compatibles en un mismo tipo de envase secundario,
+sin comprometer la integridad del producto ni la eficiencia del transporte. Formalmente,
+se busca minimizar el costo total:
+
+\begin{equation*}
+C_{\text{total}} = C_{\text{packaging}} + C_{\text{flete}}
+\end{equation*}
+
+donde $C_{\text{packaging}}$ surge del precio por caja ---definido por el grosor de cartón
+elegido y el volumen anual consolidado de cada tipo--- y $C_{\text{flete}}$ surge de la
+cantidad de pallets necesarios para transportar la producción anual, según el costo por
+pallet de cada ruta planta-región (USD 150 dentro de la región de origen, USD 500 hacia el
+resto).
+
+Esta consolidación no está exenta de tensiones: una caja diseñada para servir a varios
+productos a la vez puede no ser la más eficiente en el uso del espacio del pallet para
+cada uno de ellos en particular, lo que podría aumentar el costo de flete incluso mientras
+se reduce el costo de packaging. Identificar y cuantificar ese trade-off entre packaging y
+flete es, por lo tanto, parte central del objetivo del proyecto y se desarrolla en detalle
+en la Sección~6. Adicionalmente, la solución debe ser extensible: tiene que definir un
+protocolo claro para que, ante cada nuevo lanzamiento, se pueda decidir si conviene
+asignar una caja ya existente o crear una nueva, evitando que el catálogo vuelva a
+fragmentarse con el tiempo.
+
+% =========================================================
+% 3. ANÁLISIS EXPLORATORIO DE DATOS
+% =========================================================
+\section{Análisis exploratorio de datos}
+\nota{Esta sección está pedida explícitamente en la consigna y pesa en el criterio de ``rigor del análisis exploratorio''. El objetivo es mostrar el punto de partida antes de optimizar.}
+
+\subsection{Portafolio actual de cajas}
+\nota{Cantidad de tipos de caja, cuántos SKUs por tipo, dispersión de dimensiones (H, W, L). Gráfico: histograma o scatter de dimensiones mostrando clusters de productos ``casi iguales'' con cajas distintas.}
+
+Los 427 productos distintos que la empresa produce se distribuyen actualmente en 204 tipos distintos de caja.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Rangos y dispersión de dimensiones internas de cajas.}
+  \label{tab:dimensiones_internas}
+  \begin{tabular}{l c c c}
+    \toprule
+    \textbf{Dimensión} & \textbf{Mínimo (mm)} & \textbf{Máximo (mm)} & \textbf{Rango (mm)} \\
+    \midrule
+    Alto  & 138,0 & 363,0 & 225,0 \\
+    Ancho & 182,0 & 297,0 & 115,0 \\
+    Largo & 375,0 & 395,0 &  20,0 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Distribución de volúmenes y costos}
+\nota{Volumen anual por producto y por tipo de caja actual. ¿Cuántos productos caen en Tier 1 ($<$ 20.000 u.) pagando el markup del 10\%? Costo actual desglosado: packaging vs. flete, por planta/región.}
+
+\begin{table}[htbp]
+  \centering
+  \caption{Volumen de productos y cajas enviadas por planta.}
+  \label{tab:envios_planta}
+  \begin{tabular}{l *{3}{c}}
+    \toprule
+    \textbf{Planta} & {\textbf{Productos Enviados}} & {\textbf{Cajas Enviadas}} & {\textbf{Cajas Requeridas}} \\
+    \midrule
+    Curitiba     & 22.676.999 & 99.777.709 & 22.676.999 \\
+    Santiago     & 15.292.073 & 67.677.375 & 15.292.073 \\
+    Buenos Aires &  8.896.511 & 28.325.687 &  8.896.511 \\
+    Bakersfield  &  8.504.666 & 38.218.479 &  8.504.666 \\
+    Monterrey    &  7.050.662 & 42.254.246 &  7.050.662 \\
+    \midrule
+    \textbf{Total} & 62420911 & 276253496 & 62420911 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+Observemos que las plantas de Curitiba y Santiago son las que reciben más productos y cajas en general. En el caso de Curitiba, la diferencia supera el doble frente a las demás tres plantas. Esto puede suponer una mayor conveniencia para enviar unidades a Curitiba, debido a los altos descuentos en el costo.
+
+Veamos en más profundidad la variación de descuentos según la planta:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{tiers_plantas.png}
+    \caption{Distribución por tiers de descuento para las cajas utilizadas por planta.}
+    \label{fig:placeholder}
+\end{figure}
+Mediante el gráfico se identifican dos hallazgos clave que respaldan lo mencionado anteriormente:
+
+\begin{enumerate}[label=\textbf{\arabic*.}, leftmargin=*, itemsep=0.8em]
+    \item \textbf{Distribución por plantas:} Las plantas de \textbf{Curitiba} y \textbf{Santiago} destacan por ser las que reciben la mayor diversidad de tipos de cajas. Por el contrario, \textbf{Monterrey} presenta el menor nivel de actividad, con una recepción considerablemente más baja.
+    
+    \item \textbf{Volumen y beneficios logísticos:} Un porcentaje relevante de los tipos de cajas enviados a Curitiba y Santiago supera las 500.000 unidades (o al menos alcanza las 100.000 unidades). Esto implica que dichas plantas califican para los \textbf{descuentos más altos en el costo de flete}, lo cual, sumado al gran volumen de productos que manejan, representa una ventaja logística significativa.
+\end{enumerate}
+
+\vspace{0.5em}
+\noindent\textbf{Observaciones adicionales:}
+\begin{itemize}[leftmargin=*, label=\small$\bullet$, itemsep=0.4em]
+    \item Todas las plantas presentan una cantidad similar de tipos de cajas con volúmenes bajos (menos de 20.000 unidades).
+    \item Ciertamente, Bakersfield tiene un número considerable de tipos de cajas con volúmenes altos, ubicados en los tiers 1 y 2.
+\end{itemize}
+
+\subsection{Utilización actual del pallet (\texorpdfstring{$U_{\text{pallet}}$}{U\_pallet})}
+\nota{Baseline de \texttt{U\_pallet} por región/planta con el layout actual (column stacking, 1200~$\times$~800~mm, 1800~mm de altura útil).}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{u_pallet_dist.png}
+    \caption{Distribución del porcentaje de utilización de pallet para cada tipo de caja.}
+    \label{fig:placeholder}
+\end{figure}
+
+Notemos que de los 204 tipos de cajas, la mayoría realmente no tiene un uso eficiente del espacio de pallet. Si bien vemos que algunos ocupan en un 90\% o más, hay otros que apenas alcanzan al 75\%; y la mitad alternan entre un 80\% y 90\%, lo cual demuestra que el uso de ciertos tipos de cajas se ve más beneficiado que de otros.
+\subsection{Utilización volumétrica de la caja (\texorpdfstring{$U_{\text{caja}}$}{U\_caja}) y headspace actual}
+\nota{Gap entre envase primario y caja. Sirve para justificar dónde hay margen para reajustar dimensiones (hasta 10\%) sin violar el headspace máximo.}
+\placeholder
+
+\subsection{Principales hallazgos del diagnóstico}
+\nota{Síntesis en 3--5 bullets de las oportunidades detectadas, que después se retoman en la metodología.}
+\placeholder
+
+% =========================================================
+% 4. METODOLOGÍA
+% =========================================================
+\section{Metodología}
+
+\subsection{Criterio de consolidación de productos}
+\nota{Cómo se agruparon productos en menos tipos de caja (ej. clustering por dimensiones/volumen). Justificar por qué ese criterio y no otro, en términos de negocio.}
+\placeholder
+
+\subsection{Selección de grosor de cartón}
+\nota{Cómo se eligió entre 3,0 / 4,5 / 5,0 mm por grupo consolidado, balanceando resistencia (ECT) vs. costo. Recordar: un único grosor uniforme para toda la solución, sin mezclas.}
+\placeholder
+
+\subsection{Validación de restricciones}
+\nota{Explicar cómo se verificó cada restricción --- es crítico porque incumplir cualquiera da puntaje 0 sin parcialidad:}
+\begin{notalist}
+\item Headspace máximo (6\% / 8\% / 10\% según grosor, tope 40~mm).
+\item Reajuste de dimensiones internas hasta 10\% (volumen $\geq$ producto).
+\item Resistencia a compresión ($\text{carga\_max} \geq$ peso de capas superiores).
+\item Un solo producto por pallet.
+\item Caja no rotable (H fija como eje vertical).
+\end{notalist}
+\placeholder
+
+\subsection{Cálculo de utilización de pallet y pricing por tier}
+\nota{Cómo se calculó \texttt{cantidad\_cajas\_total} por pallet (column stacking) y cómo se aplicó el factor de volumen (tiers 1--5) al precio base según grosor.}
+\placeholder
+
+% =========================================================
+% 5. RESULTADOS
+% =========================================================
+\section{Resultados}
+
+\subsection{Reducción en tipos de caja}
+\nota{\texttt{N\_tipos} actual vs. propuesto. Gráfico de barras simple (antes/después).}
+\placeholder
+
+\subsection{Costo total: packaging + flete}
+\nota{Costo actual vs. propuesto, desglosado por componente. Gráfico tipo waterfall: costo actual $\rightarrow$ ahorro packaging $\rightarrow$ ahorro flete $\rightarrow$ costo final.}
+\placeholder
+
+\subsection{Utilización de pallet por región}
+\nota{\texttt{U\_pallet} promedio por región, escenario actual vs. propuesto. Idealmente un gráfico de barras agrupadas por región.}
+\placeholder
+
+\subsection{Tabla resumen de asignación}
+\nota{Tabla agregada (no las 500 filas) a modo de muestra representativa. La tabla completa (\texttt{codigo\_producto}, \texttt{caja\_grosor\_mm}, \texttt{caja\_exterior\_largo}, \texttt{caja\_exterior\_ancho}, \texttt{caja\_exterior\_alto}) va en el Anexo A o como archivo .csv adjunto/linkeado.}
+\placeholder
+
+% =========================================================
+% 6. TRADE-OFF PACKAGING VS. FLETE
+% =========================================================
+\section{Trade-off packaging vs. flete}
+\nota{Pedido explícitamente en la consigna y es un criterio de evaluación aparte (``coherencia y justificación de negocio... incluyendo el trade-off'').}
+\begin{notalist}
+\item Mostrar casos donde consolidar cajas mejoró packaging pero empeoró \texttt{U\_pallet} (o viceversa).
+\item Explicar cómo se ponderó esa tensión para llegar a la decisión final.
+\item Un gráfico (scatter costo packaging vs. costo flete, o waterfall) que ilustre el trade-off.
+\end{notalist}
+\placeholder
+
+% =========================================================
+% 7. PROTOCOLO PARA NUEVOS PRODUCTOS
+% =========================================================
+\section{Protocolo de asignación para nuevos productos}
+\nota{Parte del ``output esperado'' de la consigna. No necesita más matemática, sí buen diseño de proceso --- acá se puede lucir la creatividad.}
+\begin{notalist}
+\item Diagrama de flujo o checklist: cómo evaluar si un producto nuevo encaja en una caja existente.
+\item Criterios de compatibilidad dimensional, headspace y resistencia a verificar.
+\item Cuándo se justifica crear un tipo de caja nuevo en vez de reutilizar una existente.
+\end{notalist}
+\placeholder
+
+% =========================================================
+% 8. LIMITACIONES Y PRÓXIMOS PASOS
+% =========================================================
+\section{Limitaciones y próximos pasos}
+\nota{Corto y honesto. Ej.: supuesto de column stacking, un solo layout de pallet para las 5 plantas, valores discretos de ECT. Qué se podría refinar con más datos o tiempo.}
+\placeholder
+
+% =========================================================
+% 9. CONCLUSIONES
+% =========================================================
+\section{Conclusiones}
+\nota{3--5 líneas cerrando el impacto de negocio y el mensaje principal para la audiencia no técnica.}
+\placeholder
+
+\newpage
+
+% =========================================================
+% ANEXOS
+% =========================================================
+\section*{Anexos}
+\addcontentsline{toc}{section}{Anexos}
+
+\subsection*{Anexo A: Tabla completa de asignación}
+\addcontentsline{toc}{subsection}{Anexo A: Tabla completa de asignación}
+\nota{Tabla completa, una fila por \texttt{codigo\_producto}, con columnas exactas: \texttt{codigo\_producto}, \texttt{caja\_grosor\_mm}, \texttt{caja\_exterior\_largo}, \texttt{caja\_exterior\_ancho}, \texttt{caja\_exterior\_alto}. Puede ir como link al .csv si el archivo es muy extenso para el documento.}
+\placeholder
+
+\subsection*{Anexo B: Metodología técnica / código (opcional)}
+\addcontentsline{toc}{subsection}{Anexo B: Metodología técnica / código (opcional)}
+\nota{La entrega del código es opcional y no es criterio de evaluación en sí mismo, pero si se incluye debe estar documentado y ser reproducible.}
+\placeholder
+
+\subsection*{Anexo C: Supuestos y fuentes de datos}
+\addcontentsline{toc}{subsection}{Anexo C: Supuestos y fuentes de datos}
+\nota{Listado breve de supuestos tomados sobre los 4 archivos de datos (catálogo de productos, especificaciones de cajas, operaciones de planta, compras).}
+\placeholder
+
+\end{document}
